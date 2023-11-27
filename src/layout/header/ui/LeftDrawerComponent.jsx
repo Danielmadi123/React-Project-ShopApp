@@ -48,7 +48,7 @@ const LeftDrawerComponent = ({ isOpen, onCloseDrawer, selectedIndex }) => {
     });
   }
 
-  if (isBusiness) {
+  if (isBusiness || isAdmin) {
     listItems.push({
       text: "My Cards",
       link: "/MyCardsPage",
