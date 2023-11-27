@@ -145,12 +145,12 @@ const CardComponent = ({
     navigate(`/card-details/${_id}`);
   };
 
-  useEffect(() => {
-    const savedLikeStatus = localStorage.getItem(`like_${_id}`);
-    if (savedLikeStatus !== null) {
-      setIsLiked(savedLikeStatus === "true");
-    }
-  }, [_id]);
+  // useEffect(() => {
+  //   const savedLikeStatus = localStorage.getItem(`like_${_id}`);
+  //   if (savedLikeStatus !== null) {
+  //     setIsLiked(savedLikeStatus === "true");
+  //   }
+  // }, [_id]);
 
   return (
     <Card>
