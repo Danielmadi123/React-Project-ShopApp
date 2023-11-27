@@ -47,16 +47,16 @@ const SandboxPage = () => {
     }
   };
 
-  const changeUserStatus = async (userId, isBusiness) => {
+  const handleChangeUserType = async (userId, isBusiness) => {
     try {
-      const data = { status: isBusiness };
+      const data = { isBusiness: !isBusiness };
       await axios.patch(
         `https://monkfish-app-z9uza.ondigitalocean.app/bcard2/users/${userId}`,
         data
       );
       const updatedUsers = users.map((user) => {
         if (user._id === userId) {
-          return { ...user, isBusiness };
+          return { ...user, isBusiness: !isBusiness };
         }
         return user;
       });
@@ -67,7 +67,7 @@ const SandboxPage = () => {
   };
 
   const makeRegularUser = (userId) => {
-    changeUserStatus(userId, false);
+    handleChangeUserType(userId, true);
   };
 
   const handleChangePage = (event, newPage) => {
@@ -112,7 +112,6 @@ const SandboxPage = () => {
                   </TableCell>
                   <TableCell
                     sx={{
-                      
                       fontWeight: 900,
                       fontSize: "1.2rem",
                       paddingLeft: 7,
@@ -144,7 +143,7 @@ const SandboxPage = () => {
                         ? "Business"
                         : "Regular"}
                     </TableCell>
-                    <TableCell>
+                    <TableCell sx={{ color: "orange" }}>
                       {!userData.isAdmin && (
                         <>
                           <Button
@@ -153,22 +152,34 @@ const SandboxPage = () => {
                           >
                             Delete
                           </Button>
-                          {!userData.isBusiness && (
-                            <Button
-                              onClick={() =>
-                                changeUserStatus(userData._id, true)
-                              }
-                            >
-                              Make Business
-                            </Button>
-                          )}
-                          {userData.isBusiness && (
-                            <Button
-                              onClick={() => makeRegularUser(userData._id)}
-                            >
-                              Make Regular User
-                            </Button>
-                          )}
+                          <Button
+                            onClick={() =>
+                              handleChangeUserType(
+                                userData._id,
+                                userData.isBusiness
+                              )
+                            }
+                          >
+                            {userData.isBusiness
+                              ? "Make Regular"
+                              : "Make Business"}
+                          </Button>
+                        </>
+                      )}
+                      {userData.isAdmin && (
+                        <>
+                          <Button
+                            onClick={() =>
+                              handleChangeUserType(
+                                userData._id,
+                                userData.isBusiness
+                              )
+                            }
+                          >
+                            {userData.isBusiness
+                              ? "Make Regular"
+                              : "Make Business"}
+                          </Button>
                         </>
                       )}
                     </TableCell>
