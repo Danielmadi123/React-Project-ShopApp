@@ -1,6 +1,5 @@
 import "react-toastify/dist/ReactToastify.css";
 import LayoutComponent from "./layout/LayoutComponent";
-import { ToastContainer } from "react-toastify";
 import Router from "./routes/Router";
 import useAutoLogin from "./hooks/useAutoLogin";
 import { useEffect, useState } from "react";
@@ -12,7 +11,7 @@ const App = () => {
   useEffect(() => {
     (async () => {
       try {
-        await autoLogin(); 
+        await autoLogin();
       } catch (err) {
         console.log(err);
       } finally {
@@ -22,7 +21,6 @@ const App = () => {
   }, []);
   return (
     <LayoutComponent>
-      <ToastContainer />
       {doneAuth ? <Router /> : <LinearProgress />}
     </LayoutComponent>
   );
