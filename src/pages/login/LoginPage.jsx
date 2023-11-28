@@ -15,6 +15,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import axios from "axios";
 import { useDispatch } from "react-redux";
+import { authActions } from "../../store/authSlice";
 import CopyrightComponent from "./ui/CopyrightComponent";
 import ROUTES from "../../routes/ROUTES";
 import { validateLogin } from "../../validation/loginValidation";
@@ -30,24 +31,34 @@ const LoginPage = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const autoLogin = useAutoLogin();
-
   const handleSubmit = async (event) => {
     try {
       event.preventDefault();
+      console.log("Submitting form...");
+
       const joiResponse = validateLogin({
         email: emailValue,
         password: passwordValue,
       });
+
       console.log("joiResponse", joiResponse);
+
       setErrorsState(joiResponse);
-      if (joiResponse) return;
+
+      if (joiResponse) {
+        console.log("Validation failed, not proceeding with login.");
+        return;
+      }
+
       let { data } = await axios.post("/users/login", {
         email: emailValue,
         password: passwordValue,
       });
 
       storeToken(data, rememberMe);
-      toast.success("You logged in successfully 👌", {
+      console.log("data from login", data);
+
+      toast("You logged in successfully 👌", {
         position: "top-right",
         autoClose: 5000,
         hideProgressBar: false,
@@ -58,22 +69,30 @@ const LoginPage = () => {
         theme: "light",
       });
 
-      // Move autoLogin outside the useEffect
       autoLogin(true);
-      navigate(ROUTES.HOME);
+
+      if (navigator.onLine) {
+        console.log("Navigating to HOME...");
+        navigate(ROUTES.HOME);
+        setTimeout(() => {
+          console.log("Refreshing the page...");
+          window.location.reload();
+        }, 500);
+      } else {
+        console.log("User is offline. Not refreshing the page.");
+        navigate(ROUTES.HOME);
+      }
     } catch (err) {
       alert("Login error, please try again");
+      console.log("err from login", err);
     }
   };
-
   const handleEmailInputChange = (e) => {
     setEmailValue(e.target.value);
   };
-
   const handlePasswordInputChange = (e) => {
     setPasswordValue(e.target.value);
   };
-
   const handleRememberMeChange = () => {
     setRememberMe(!rememberMe);
   };
@@ -168,14 +187,6 @@ const LoginPage = () => {
             >
               Sign In
             </Button>
-            <Grid container>
-              <Grid item xs></Grid>
-              <Grid item>
-                <Link href="/register" variant="body2">
-                  {"Don't have an account? Sign Up"}
-                </Link>
-              </Grid>
-            </Grid>
             <CopyrightComponent sx={{ mt: 5 }} />
           </Box>
         </Box>
