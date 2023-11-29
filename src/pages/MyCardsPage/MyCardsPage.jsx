@@ -43,7 +43,14 @@ const MyCardsPage = () => {
         const userCards = response.data.filter(
           (card) => card.user_id === userId
         );
-        setMyCards(userCards);
+
+        // Set the initial like status based on local storage
+        const cardsWithLikeStatus = userCards.map((card) => ({
+          ...card,
+          like: localStorage.getItem(`like_${card._id}`) === "true",
+        }));
+
+        setMyCards(cardsWithLikeStatus);
         setLoading(false);
       } catch (error) {
         console.error("Error fetching user's cards:", error);
@@ -85,6 +92,9 @@ const MyCardsPage = () => {
         card._id === _id ? { ...card, like: newLikeStatus } : card
       )
     );
+
+    // Save the like status in local storage
+    localStorage.setItem(`like_${_id}`, newLikeStatus.toString());
   };
 
   const handlePageChange = (event, page) => {
