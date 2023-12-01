@@ -73,6 +73,7 @@ const CreateCardPage = () => {
         theme: "light",
       });
 
+      window.location.reload();
     } catch (err) {
       console.log("err", err.response);
 
