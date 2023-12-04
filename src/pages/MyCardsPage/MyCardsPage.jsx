@@ -1,9 +1,9 @@
-// MyCardsPage.jsx
 import React, { useEffect, useState } from "react";
 import CardComponent from "../../components/CardComponent";
 import axios from "axios";
 import { useSelector } from "react-redux";
-import { Container, Grid, Button } from "@mui/material";
+import { Container, Grid, Button, Typography, Divider } from "@mui/material";
+import Pagination from '@mui/material/Pagination';
 import { useNavigate, useLocation } from "react-router-dom";
 import ROUTES from "../../routes/ROUTES";
 
@@ -12,9 +12,10 @@ const MyCardsPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const location = useLocation();
-
   const userData = useSelector((state) => state.authSlice.userData);
   const navigate = useNavigate();
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8;
 
   useEffect(() => {
     const fetchMyCards = async () => {
@@ -30,7 +31,7 @@ const MyCardsPage = () => {
         const userId = userData._id;
         const config = {
           headers: {
-            "x-auth-token": process.env.REACT_APP_API_TOKEN, // Use environment variable
+            "x-auth-token": process.env.REACT_APP_API_TOKEN,
           },
         };
 
@@ -42,7 +43,14 @@ const MyCardsPage = () => {
         const userCards = response.data.filter(
           (card) => card.user_id === userId
         );
-        setMyCards(userCards);
+
+        // Set the initial like status based on local storage
+        const cardsWithLikeStatus = userCards.map((card) => ({
+          ...card,
+          like: localStorage.getItem(`like_${card._id}`) === "true",
+        }));
+
+        setMyCards(cardsWithLikeStatus);
         setLoading(false);
       } catch (error) {
         console.error("Error fetching user's cards:", error);
@@ -79,29 +87,36 @@ const MyCardsPage = () => {
   };
 
   const handleLikeChange = (_id, newLikeStatus) => {
-    // Update the like status in the myCards state
     setMyCards((prevCards) =>
       prevCards.map((card) =>
         card._id === _id ? { ...card, like: newLikeStatus } : card
       )
     );
+
+    // Save the like status in local storage
+    localStorage.setItem(`like_${_id}`, newLikeStatus.toString());
+  };
+
+  const handlePageChange = (event, page) => {
+    setCurrentPage(page);
   };
 
   return (
     <Container
       sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}
     >
+      <Typography
+        sx={{ fontFamily: "serif", textAlign: "center", p: 5 }}
+        variant="h1"
+      >
+        MY CARDS
+        <Divider sx={{ mt: 4, width: 750 }} />
+      </Typography>
+      <Divider sx={{ mb: 2 }} />
       <Button
         variant="outlined"
         sx={{ mt: 3, bgcolor: "green", color: "white" }}
-        onClick={() => {
-          if (userData && (userData.isBusiness || userData.isAdmin)) {
-            navigate(ROUTES.CREATECARD);
-          } else {
-            // Optionally, you can show a message or handle it differently
-            console.log("Only business users or admins can create cards.");
-          }
-        }}
+        onClick={() => navigate(ROUTES.CREATECARD)}
       >
         Create Card
       </Button>
@@ -110,32 +125,40 @@ const MyCardsPage = () => {
       {error && <div>{error}</div>}
 
       <Grid container spacing={2} sx={{ marginTop: 2 }}>
-        {myCards.length === 0 ? (
-          <Grid item>
-            <div>No cards found.</div>
-          </Grid>
-        ) : (
-          myCards.map(
-            ({ _id, title, subtitle, phone, address, image, like }) => (
-              <Grid item key={_id} xs={12} sm={6} md={4} lg={3}>
-                <CardComponent
-                  _id={_id}
-                  title={title}
-                  subTitle={subtitle}
-                  phone={phone}
-                  address={`${address.city}, ${address.street} ${address.houseNumber}`}
-                  img={image && image.url}
-                  alt={image && image.alt}
-                  like={like} // Pass the liked status to the CardComponent
-                  onDeleteCard={handleDeleteCard}
-                  onEditCard={handleEditCard}
-                  onLikeChange={handleLikeChange} // Pass the function to update like status
-                />
-              </Grid>
-            )
-          )
-        )}
+        {myCards
+          .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+          .map(({ _id, title, subtitle, phone, address, image, like }) => (
+            <Grid item key={_id} xs={12} sm={6} md={4} lg={3}>
+              <CardComponent
+                _id={_id}
+                title={title}
+                subTitle={subtitle}
+                phone={phone}
+                address={`${address.city}, ${address.street} ${address.houseNumber}`}
+                img={image && image.url}
+                alt={image && image.alt}
+                like={like}
+                onDeleteCard={handleDeleteCard}
+                onEditCard={handleEditCard}
+                onLikeChange={handleLikeChange}
+              />
+            </Grid>
+          ))}
       </Grid>
+
+      <Pagination
+        count={Math.ceil(myCards.length / itemsPerPage)}
+        page={currentPage}
+        onChange={handlePageChange}
+        color="primary"
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "flex-end",
+          marginTop: "20px",
+          marginBottom: "20px",
+        }}
+      />
     </Container>
   );
 };

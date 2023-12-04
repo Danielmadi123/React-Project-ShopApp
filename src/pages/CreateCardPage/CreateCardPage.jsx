@@ -1,27 +1,38 @@
-import { useState } from "react";
-import {
-  Container,
-  TextField,
-  Grid,
-  Typography,
-  Divider,
-  Button,
-} from "@mui/material";
-import { Link } from "react-router-dom";
+import React, { useState } from "react";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import ROUTES from "../../routes/ROUTES";
 import axios from "axios";
+import CardForm from "./CardForm";
+import ROUTES from "../../routes/ROUTES";
+import { useNavigate } from "react-router-dom";
 
 const CreateCardPage = () => {
+  const navigate = useNavigate();
+
   const [inputsValue, setInputValue] = useState({
     title: "",
     subtitle: "",
     phone: "",
-    add: "",
-    mail: "",
     description: "",
     web: "",
+    email: "",
+    url: "",
+    alt: "",
+    state: "",
+    country: "",
+    city: "",
+    street: "",
+    houseNumber: "",
+    zip: "",
+  });
+  const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({
+    title: "",
+    subtitle: "",
+    phone: "",
+    description: "",
+    web: "",
+    email: "",
     url: "",
     alt: "",
     state: "",
@@ -32,21 +43,64 @@ const CreateCardPage = () => {
     zip: "",
   });
 
+  const fields = [
+    { id: "title", label: "Title", required: true },
+    { id: "subtitle", label: "SubTitle", required: true },
+    { id: "phone", label: "Phone", required: true },
+    { id: "description", label: "Description", required: true },
+    { id: "web", label: "Web", required: false },
+    { id: "email", label: "Email", required: true },
+    { id: "url", label: "Url", required: false },
+    { id: "alt", label: "Alt", required: false },
+    { id: "state", label: "State", required: false },
+    { id: "country", label: "Country", required: true },
+    { id: "city", label: "City", required: true },
+    { id: "street", label: "Street", required: true },
+    { id: "houseNumber", label: "House Number", required: true },
+    { id: "zip", label: "Zip", required: false },
+  ];
+
   const handleInputChange = (e) => {
+    const { id, value } = e.target;
     setInputValue((currentState) => ({
       ...currentState,
-      [e.target.id]: e.target.value,
+      [id]: value,
+    }));
+    setErrors((prevErrors) => ({
+      ...prevErrors,
+      [id]:
+        value.trim() === ""
+          ? `${id.charAt(0).toUpperCase() + id.slice(1)} is required`
+          : "",
     }));
   };
 
-  const handleUpdateChangesClick = async () => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (Object.values(errors).some((error) => error !== "")) {
+      toast.error("Please fill in all required fields correctly.", {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      });
+      return;
+    }
+
+    setLoading(true);
+
     try {
       const { data } = await axios.post("/cards", {
         title: inputsValue.title,
         subtitle: inputsValue.subtitle,
         description: inputsValue.description,
         phone: inputsValue.phone,
-        email: inputsValue.mail,
+        email: inputsValue.email,
         web: inputsValue.web,
         image: {
           url: inputsValue.url,
@@ -72,188 +126,43 @@ const CreateCardPage = () => {
         progress: undefined,
         theme: "light",
       });
-
-      window.location.reload();
+      navigate(ROUTES.MYCARDS);
     } catch (err) {
-      console.log("err", err.response);
-
-      toast.error("Error creating card. Please try again.", {
-        position: "top-right",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "light",
-      });
+      if (err.response && err.response.data) {
+        const serverErrors = err.response.data;
+        Object.keys(serverErrors).forEach((field) => {
+          setErrors((prevErrors) => ({
+            ...prevErrors,
+            [field]: serverErrors[field],
+          }));
+        });
+      } else {
+        toast.error("Error creating card. Please try again.", {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+        });
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <Container sx={{ padding: "50px" }}>
-      <Typography variant="h2" sx={{ mb: 1, padding: "10px", pb: "0px" }}>
-        Create - Cards
-      </Typography>
-      <Typography variant="body1" sx={{ mb: 1, padding: "3px", ml: "7px" }}>
-        Put new values in the correct input
-      </Typography>
-      <Divider sx={{ mb: 3 }} />
-      <Grid container flexDirection={"column"}>
-        <TextField
-          id="title"
-          label="Title"
-          variant="outlined"
-          sx={{ mt: "10px" }}
-          onChange={handleInputChange}
-          value={inputsValue.title}
-          required
-        />
-        <TextField
-          id="subtitle"
-          label="SubTitle"
-          variant="outlined"
-          sx={{ mt: "10px" }}
-          onChange={handleInputChange}
-          value={inputsValue.subtitle}
-          required
-        />
-        <TextField
-          id="phone"
-          label="Phone Number"
-          variant="outlined"
-          sx={{ mt: "10px" }}
-          onChange={handleInputChange}
-          value={inputsValue.phone}
-          required
-        />
-        <TextField
-          id="description"
-          label="Description"
-          variant="outlined"
-          sx={{ mt: "10px" }}
-          onChange={handleInputChange}
-          value={inputsValue.description}
-          required
-        />
-        <TextField
-          id="web"
-          label="Web"
-          variant="outlined"
-          sx={{ mt: "10px" }}
-          onChange={handleInputChange}
-          value={inputsValue.web}
-        />
-        <TextField
-          id="mail"
-          label="Email"
-          variant="outlined"
-          sx={{ mt: "10px" }}
-          onChange={handleInputChange}
-          value={inputsValue.mail}
-          required
-        />
-
-        <TextField
-          id="url"
-          label="Url"
-          variant="outlined"
-          sx={{ mt: "10px" }}
-          onChange={handleInputChange}
-          value={inputsValue.url}
-        />
-        <TextField
-          id="alt"
-          label="Alt"
-          variant="outlined"
-          sx={{ mt: "10px" }}
-          onChange={handleInputChange}
-          value={inputsValue.alt}
-        />
-
-        <TextField
-          id="state"
-          label="State"
-          variant="outlined"
-          sx={{ mt: "10px" }}
-          onChange={handleInputChange}
-          value={inputsValue.state}
-        />
-        <TextField
-          id="country"
-          label="Country"
-          variant="outlined"
-          sx={{ mt: "10px" }}
-          onChange={handleInputChange}
-          value={inputsValue.country}
-          required
-        />
-        <TextField
-          id="city"
-          label="City"
-          variant="outlined"
-          sx={{ mt: "10px" }}
-          onChange={handleInputChange}
-          value={inputsValue.city}
-          required
-        />
-        <TextField
-          id="street"
-          label="Street"
-          variant="outlined"
-          sx={{ mt: "10px" }}
-          onChange={handleInputChange}
-          value={inputsValue.street}
-          required
-        />
-        <TextField
-          id="houseNumber"
-          label="House Number"
-          variant="outlined"
-          sx={{ mt: "10px" }}
-          onChange={handleInputChange}
-          value={inputsValue.houseNumber}
-          required
-        />
-        <TextField
-          id="zip"
-          label="Zip"
-          variant="outlined"
-          sx={{ mt: "10px" }}
-          onChange={handleInputChange}
-          value={inputsValue.zip}
-        />
-      </Grid>
-      <Grid container spacing={2}>
-        <Grid item lg={8} md={8} sm={8} xs>
-          <Link to="/MyCardsPage" variant="body2">
-            <Button
-              variant="outlined"
-              sx={{ mt: 2, width: "100%", ml: "0%", bgcolor: "darkblue" }}
-              onClick={handleUpdateChangesClick}
-            >
-              Create Card
-            </Button>
-          </Link>
-        </Grid>
-        <Grid item xs>
-          <Link to={ROUTES.HOME}>
-            <Button
-              variant="outlined"
-              sx={{
-                mt: 2,
-                width: "100%",
-                ml: "0%",
-                bgcolor: "navy",
-                color: "gray",
-              }}
-            >
-              Discard
-            </Button>
-          </Link>
-        </Grid>
-      </Grid>
-    </Container>
+    <CardForm
+      fields={fields}
+      inputsValue={inputsValue}
+      errors={errors}
+      loading={loading}
+      handleInputChange={handleInputChange}
+      handleSubmit={handleSubmit}
+    />
   );
 };
+
 export default CreateCardPage;
