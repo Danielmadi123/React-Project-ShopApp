@@ -19,6 +19,8 @@ const itemsPerPage = 20;
 
 const HomePage = () => {
   const [dataFromServer, setDataFromServer] = useState([]);
+  const [myCards, setMyCards] = useState([]);
+  const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const navigate = useNavigate();
   const userData = useSelector((bigPie) => bigPie.authSlice.userData);
@@ -55,11 +57,25 @@ const HomePage = () => {
     setCurrentPage(value);
   };
 
-  const handleDeleteCard = (_id) => {
-    console.log("_id to delete (HomePage)", _id);
-    setDataFromServer((dataFromServerCopy) =>
-      dataFromServerCopy.filter((card) => card._id !== _id)
-    );
+  const handleDeleteCard = async (_id) => {
+    try {
+      const config = {
+        headers: {
+          "x-auth-token": process.env.REACT_APP_API_TOKEN,
+        },
+      };
+
+      await axios.delete(
+        `https://monkfish-app-z9uza.ondigitalocean.app/bcard2/cards/${_id}`,
+        config
+      );
+
+      setMyCards((prevCards) => prevCards.filter((card) => card._id !== _id));
+      window.location.reload();
+    } catch (error) {
+      console.error("Error deleting card:", error);
+      setError("Error deleting card. Please try again.");
+    }
   };
 
   const handleEditCard = (_id) => {

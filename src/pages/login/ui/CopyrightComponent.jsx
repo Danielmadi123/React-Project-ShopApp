@@ -10,7 +10,7 @@ const CopyrightComponent = (props) => {
     >
       {"Copyright © "}
       <Link color="inherit" href="https://mui.com/">
-        Daniel Madi
+        Daniel Madi{" "}
       </Link>{" "}
       {new Date().getFullYear()}
       {"."}

@@ -16,6 +16,7 @@ import axios from "axios";
 import { normalizeData } from "./normalizeData";
 import { validateRegister } from "../../validation/registerValidation";
 import ROUTES from "../../routes/ROUTES";
+import CopyrightComponent from "../login/ui/CopyrightComponent";
 
 const RegisterPage = () => {
   const navigate = useNavigate();
@@ -344,6 +345,7 @@ const RegisterPage = () => {
             </Link>
           </Grid>
         </Grid>
+        <CopyrightComponent sx={{ mt: 5 }} />
       </Box>
     </Box>
   );

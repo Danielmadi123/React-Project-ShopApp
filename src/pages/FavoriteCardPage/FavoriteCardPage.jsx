@@ -3,12 +3,13 @@ import CardComponent from "../../components/CardComponent";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import { Container, Grid, Typography, Divider } from "@mui/material";
-import Pagination from '@mui/material/Pagination';
+import Pagination from "@mui/material/Pagination";
 
 const FavoriteCardPage = () => {
   const [likedCards, setLikedCards] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [myCards, setMyCards] = useState([]);
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
   const userData = useSelector((bigPie) => bigPie.authSlice.userData);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
@@ -36,23 +37,25 @@ const FavoriteCardPage = () => {
     fetchLikedCards();
   }, [userData]);
 
-  const handleDeleteCard = (_id) => {
-    console.log("_id to delete (FavoriteCardPage)", _id);
+  const handleDeleteCard = async (_id) => {
+    try {
+      const config = {
+        headers: {
+          "x-auth-token": process.env.REACT_APP_API_TOKEN,
+        },
+      };
 
-    axios
-      .delete(
-        `https://monkfish-app-z9uza.ondigitalocean.app/bcard2/cards/${_id}`
-      )
-      .then((response) => {
-        console.log("Card deleted successfully:", response.data);
+      await axios.delete(
+        `https://monkfish-app-z9uza.ondigitalocean.app/bcard2/cards/${_id}`,
+        config
+      );
 
-        setLikedCards((likedCardsCopy) =>
-          likedCardsCopy.filter((card) => card._id !== _id)
-        );
-      })
-      .catch((error) => {
-        console.error("Error deleting card:", error);
-      });
+      setMyCards((prevCards) => prevCards.filter((card) => card._id !== _id));
+      window.location.reload();
+    } catch (error) {
+      console.error("Error deleting card:", error);
+      setError("Error deleting card. Please try again.");
+    }
   };
 
   const handleLikeRemove = (_id) => {

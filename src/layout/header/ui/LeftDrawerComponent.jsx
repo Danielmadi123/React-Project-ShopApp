@@ -29,12 +29,12 @@ const LeftDrawerComponent = ({ isOpen, onCloseDrawer, selectedIndex }) => {
 
   if (notLoggedIn) {
     listItems.push({
-      text: "REGISTER",
+      text: "Sigh Up",
       link: "/register",
       icon: <AccountBoxIcon />,
     });
     listItems.push({
-      text: "LOGIN",
+      text: "login",
       link: "/login",
       icon: <AccountBoxIcon />,
     });

@@ -3,7 +3,7 @@ import CardComponent from "../../components/CardComponent";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import { Container, Grid, Button, Typography, Divider } from "@mui/material";
-import Pagination from '@mui/material/Pagination';
+import Pagination from "@mui/material/Pagination";
 import { useNavigate, useLocation } from "react-router-dom";
 import ROUTES from "../../routes/ROUTES";
 
@@ -44,7 +44,6 @@ const MyCardsPage = () => {
           (card) => card.user_id === userId
         );
 
-        // Set the initial like status based on local storage
         const cardsWithLikeStatus = userCards.map((card) => ({
           ...card,
           like: localStorage.getItem(`like_${card._id}`) === "true",
@@ -93,11 +92,10 @@ const MyCardsPage = () => {
       )
     );
 
-    // Save the like status in local storage
     localStorage.setItem(`like_${_id}`, newLikeStatus.toString());
   };
 
-  const handlePageChange = (event, page) => {
+  const handlePageChange = (_, page) => {
     setCurrentPage(page);
   };
 
@@ -120,9 +118,8 @@ const MyCardsPage = () => {
       >
         Create Card
       </Button>
-
       {loading && <div>Loading...</div>}
-      {error && <div>{error}</div>}
+      {error && <div style={{ color: "red" }}>{error}</div>}
 
       <Grid container spacing={2} sx={{ marginTop: 2 }}>
         {myCards
